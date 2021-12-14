@@ -1,8 +1,4 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package uaspemjar;
 import javax.swing.*;
 import java.awt.*;
@@ -10,7 +6,9 @@ import java.io.*;
 import java.net.*;
 import java.awt.event.*;
 
+
 public class Player extends JFrame {
+
     private int width;
     private int height;
     private Container contentPane;
@@ -29,6 +27,7 @@ public class Player extends JFrame {
     private boolean buttonsEnabled;
     
     private ClientSideConnection csc;
+    public GameFrame gameFrame = new GameFrame();
     
     public Player(int w, int h) {
         width = w;
@@ -44,14 +43,15 @@ public class Player extends JFrame {
         myPoints = 0;
         enemyPoints = 0;
     }
+
     
     public void setUpGUI(){
         this.setSize(width, height);
-        this.setTitle("Player #" + playerID);
+        this.setTitle("Player " + playerID);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         contentPane.setLayout(new GridLayout(1,5));
         contentPane.add(message);
-        message.setText("Creating a simple turn-based game in Java.");
+        message.setText("Game Turn-Based");
         message.setWrapStyleWord(true);
         message.setLineWrap(true);
         message.setEditable(false);
@@ -61,11 +61,11 @@ public class Player extends JFrame {
         contentPane.add(b4);
         
         if (playerID == 1) {
-            message.setText("You are player #1. You go first.");
+            message.setText("Player 1. Pilih Dulu");
             otherPlayer = 2;
             buttonsEnabled = true;
         }else{
-            message.setText("Your are player #2. Wait for your turn");
+            message.setText("Player 2. Tunggu ");
             otherPlayer = 1;
             buttonsEnabled = false;
             Thread t = new Thread(new Runnable(){
@@ -89,15 +89,17 @@ public class Player extends JFrame {
                 JButton b = (JButton) ae.getSource();
                 int bNum = Integer.parseInt(b.getText());
                 
-                message.setText("You clicked button #" + bNum +". Now wait for player #" + otherPlayer);
+                message.setText("Kamu pilih " + bNum +". Tunggu Player " + otherPlayer);
                 turnsMade++;
-                System.out.println("Turns made: " + turnsMade);
+                System.out.println("Putaran ke " + turnsMade);
+                
+                
                 
                 buttonsEnabled = false;
                 toggleButtons();
                 
                 myPoints += values[bNum - 1];
-                System.out.println("My points: " + myPoints);
+                System.out.println("Points : " + myPoints);
                 csc.sendButtonNum(bNum);
                 
                 if (playerID == 2 && turnsMade == maxTurns) {
@@ -125,20 +127,9 @@ public class Player extends JFrame {
         b4.setEnabled(buttonsEnabled);    
     }
     
-    /*public void startReceivingButtonNums(){
-        Thread t = new Thread(new Runnable(){
-            public void run(){
-                while(true){
-                    csc.receiveButtonNum();
-                }
-            }
-        });
-        t.start();
-    }*/
-    
     public void updateTurn() {
         int n = csc.receiveButtonNum();
-        message.setText("Your enemy clicked button #"+n+". Your turn.");
+        message.setText("Musuh pilih "+n+". Ayo giliranmu!.");
         enemyPoints += values[n-1];
         //System.out.println("Your enemy has "+enemyPoints+" points.");
         buttonsEnabled = true;
@@ -153,41 +144,41 @@ public class Player extends JFrame {
     private void checkWinner(){
         buttonsEnabled = false;
         if (myPoints > enemyPoints) {
-            message.setText("You WON!\n" + "YOU "+myPoints+"\n" +"ENEMY: "+enemyPoints);
+            message.setText("You Winner!\n" + "My Point : "+myPoints+"\n" +"Point Musuh : "+enemyPoints);
         } else if (myPoints < enemyPoints) {
-            message.setText("You LOST!\n" + "YOU "+myPoints+"\n" +"ENEMY: "+enemyPoints);
+            message.setText("You Lost!\n" + "My Point :"+myPoints+"\n" +"Point Musuh : " +enemyPoints);
         } else {
-            message.setText("It's a tie! You both got "+myPoints+" points.");
+            message.setText("Point Seri "+myPoints+" points.");
         }
         csc.closeConnection();
     }
     
-    // Client Connection Inner Class
     private class ClientSideConnection {
         private Socket socket;
         private DataInputStream dataIn;
         private DataOutputStream dataOut;
         
         public ClientSideConnection(){
-            System.out.println("-----Client-----");
             try {
                 socket = new Socket("localhost", 51734);
                 dataIn = new DataInputStream(socket.getInputStream());
                 dataOut = new DataOutputStream(socket.getOutputStream());
                 playerID = dataIn.readInt();
-                System.out.println("Connected to server as Player #" + playerID + ".");
+                System.out.println("Player " + playerID + ".");
+                System.out.println("----------------");
                 maxTurns = dataIn.readInt() / 2;
                 values[0] = dataIn.readInt();
                 values[1] = dataIn.readInt();
                 values[2] = dataIn.readInt();
                 values[3] = dataIn.readInt();
-                System.out.println("maxTurns: " +maxTurns);
-                System.out.println("Value #1 is " + values[0]);
-                System.out.println("Value #2 is " + values[1]);
-                System.out.println("Value #3 is " + values[2]);
-                System.out.println("Value #4 is " + values[3]);
+                System.out.println("Max Putaran : " +maxTurns);
+                System.out.println("Point ke-1 : " + values[0]);
+                System.out.println("Point ke-2 : " + values[1]);
+                System.out.println("Point ke-3 : " + values[2]);
+                System.out.println("Point ke-4 : " + values[3]);
+                System.out.println("----------------");
             } catch (IOException ex){
-                System.out.println("Error");
+                System.out.println("Selesai");
             }
         }
         
@@ -204,7 +195,7 @@ public class Player extends JFrame {
             int n = -1;
             try {
                 n = dataIn.readInt();
-                System.out.println("Player #"+otherPlayer+" clicked button "+n);
+                System.out.println("Player "+otherPlayer+" pilih "+n);
             } catch (IOException ex) {
                 System.out.println("Error");
             }
@@ -214,7 +205,8 @@ public class Player extends JFrame {
         public void closeConnection(){
             try {
                 socket.close();
-                System.out.println("----CONNECTION CLOSED----");
+                System.out.println("");
+                System.out.println("----KONEKSI SELESAI----");
             } catch (IOException ex){
                 System.out.println("Error");
             }
@@ -222,10 +214,10 @@ public class Player extends JFrame {
     }
     
     public static void  main(String[] args){
+
         Player p = new Player(500, 100);
         p.connectToServer();
         p.setUpGUI();
         p.setUpButtons();
-        /*p.startReceivingButtonNums();*/
     }
 }
